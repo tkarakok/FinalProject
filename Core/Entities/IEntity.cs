@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Entities.Abstract
+namespace Core.Entities
 {
-    // IEntity implement eden her class veritabanı tablosudur
+    // IEntity : table of DB
     public interface IEntity
     {
     }
