@@ -18,6 +18,8 @@ using Core.CrossCuttingConcerns.Validation;
 using Core.Utilities.Business;
 using DataAccess.Concrete.EntityFramework;
 using FluentValidation;
+using Core.Aspects.AutoFac.Caching;
+using Core.Aspects.AutoFac.Transaction;
 
 namespace Business.Concrete
 {
@@ -33,7 +35,7 @@ namespace Business.Concrete
         }
 
 
-        // [CacheAspect]
+        [CacheAspect]
         public IDataResult<List<Product>> GetAll()
         {
             if (DateTime.Now.Hour == 10)
@@ -61,6 +63,7 @@ namespace Business.Concrete
 
         [SecuredOperation("product.add,admin")]
         [ValidationAspect(typeof(ProductValidator))]
+        //[CacheRemoveAspect("IProductService.Get")]
         public IResult Add(Product product)
         {
             IResult result =  BusinessRules.Run
@@ -81,17 +84,34 @@ namespace Business.Concrete
         }
 
         [ValidationAspect(typeof(ProductValidator))]
+        [CacheRemoveAspect("IProductService.Get")]
         public IResult Update(Product product)
         {
             _productDal.Add(product);
             return new SuccessResult(Messages.ProductAdded);
         }
 
+
+        [CacheAspect]
         public IDataResult<Product> GetById(int productId)
         {
             return new SuccessDataResult<Product>(_productDal.Get(p => p.ProductId == productId));
         }
 
+        [TransactionScopeAspect]
+        public IResult AddTransactionalTest(Product product)
+        {
+            Add(product);
+            if (product.UnitPrice < 10)
+            {
+                throw new Exception("a");
+            }
+            Add(product);
+            return null;
+        }
+
+
+        #region BussinessRules
         private IResult CheckIfProductCountOfCategoryCorrect(int categoryId)
         {
             var productsOfCategory = _productDal.GetAll(p => p.CategoryId == categoryId);
@@ -115,11 +135,13 @@ namespace Business.Concrete
         private IResult CheckIfCCategoryLimitExceded()
         {
             var result = _categoryService.GetAll();
-            if (result.Data.Count > 150 )
+            if (result.Data.Count > 150)
             {
                 return new ErrorResult(Messages.CategoryLimitExceded);
             }
             return new SuccessResult();
         }
+        #endregion
+
     }
 }
