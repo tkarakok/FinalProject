@@ -57,7 +57,7 @@ namespace Business.Concrete
         }
 
 
-        [SecuredOperation("product.add , admin")]
+        [SecuredOperation("product.add,admin")]
         [ValidationAspect(typeof(ProductValidator))]
         public IResult Add(Product product)
         {
@@ -93,7 +93,7 @@ namespace Business.Concrete
         private IResult CheckIfProductCountOfCategoryCorrect(int categoryId)
         {
             var productsOfCategory = _productDal.GetAll(p => p.CategoryId == categoryId);
-            if (productsOfCategory.Count > 10)
+            if (productsOfCategory.Count > 150)
             {
                 return new ErrorResult(Messages.ProductsCountOfCategoryCheck + productsOfCategory.Count);
             }
@@ -113,7 +113,7 @@ namespace Business.Concrete
         private IResult CheckIfCCategoryLimitExceded()
         {
             var result = _categoryService.GetAll();
-            if (result.Data.Count > 15 )
+            if (result.Data.Count > 150 )
             {
                 return new ErrorResult(Messages.CategoryLimitExceded);
             }

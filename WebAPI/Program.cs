@@ -4,6 +4,8 @@ using Autofac.Extensions.DependencyInjection;
 using Business.Abstaract;
 using Business.Concrete;
 using Business.DependencyResolves.Autofac;
+using Core.DependencyResolver;
+using Core.Extansions;
 using Core.Utilities.IoC;
 using Core.Utilities.Security.Encryption;
 using Core.Utilities.Security.JWT;
@@ -33,7 +35,6 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
 var tokenOptions = builder.Configuration.GetSection("TokenOptions").Get<TokenOptions>();
 
@@ -52,7 +53,11 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-ServiceTool.Create(builder.Services);
+builder.Services.AddDependencyResolver(new ICoreModule[]
+{
+    new CoreModule()
+});
+
 
 var app = builder.Build();
 // Configure the HTTP request pipeline.
